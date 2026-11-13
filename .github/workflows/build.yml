@@ -29,6 +29,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: raspberrypi/pico-sdk
+          # SDK master immediately before rehius/usk 2.80 was published (2024-09-04).
+          ref: dfb573818f0f293177a89d99424c13944ef76656
           path: pico-sdk
           submodules: recursive
 
