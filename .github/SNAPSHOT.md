@@ -10,7 +10,8 @@ known, but this reconstruction reproduced both published binaries byte-for-byte.
 | busk | `supersnug/busk@3f715c6585140ec3ab9128a20b719f5035191374` |
 | Pico SDK | `dfb573818f0f293177a89d99424c13944ef76656` (release-time `master`) |
 | picotool | `971ee85176dd17a3bf43713cc96cd52e24b449f6` (release-time `develop`) |
-| CMake | 3.30.2, official Linux x86-64 archive, SHA-256 checked in the workflow |
+| Toolchain image | `ghcr.io/supersnug/usk-toolchain@sha256:6e35fef083820259315d949658917d5e4636c4760d878b5f724bebfbfcd141c9` |
+| CMake | 3.30.2, official Linux x86-64 archive, SHA-256 checked in the toolchain Dockerfile |
 | Ubuntu userspace | `jammy-20240808`, pinned amd64 image manifest digest |
 | APT packages | `20240904T041204Z` archive, including updates, security and transitive dependencies |
 | Checkout action | `f43a0e5ff2bd294095638e18286ca9a3d1956744` (v3.6.0) |
@@ -22,6 +23,13 @@ USK's firmware files match upstream tag `PicoFly_2.80_2024.09.04_04-12`
 Changing the fork's default branch does not change the source built by this workflow.
 SDK submodules are fixed by its commit; pioasm is built from that SDK's source.
 Picotool is built by the SDK with its normal options, using the pinned local source.
+
+The [separate toolchain repository](https://github.com/supersnug/usk-toolchain)
+preinstalls the frozen packages and CMake. Its
+[successful publisher run](https://github.com/supersnug/usk-toolchain/actions/runs/43353402650)
+produced the image digest above, verified as publicly accessible. Firmware jobs
+only pull this image; they no longer install packages or download CMake. Do not
+replace the digest with the mutable `2.80` tag.
 
 Historical evidence:
 
@@ -36,6 +44,8 @@ A full local build using the pinned Ubuntu image filesystem, package snapshot,
 CMake and source revisions produced these SHA-256 hashes. Both files were
 compared directly with the upstream 2.80 release downloads and were identical.
 GitHub Actions orchestration and release publishing were not exercised locally.
+This verification predates packaging the toolchain image; a firmware build using
+the published image has not yet been verified.
 
 | Output | SHA-256 |
 | --- | --- |
@@ -45,9 +55,10 @@ GitHub Actions orchestration and release publishing were not exercised locally.
 ## Limits
 
 The host uses `ubuntu-22.04`, but GitHub still manages its kernel, container engine
-and JavaScript action runtimes. Host CA certificates are mounted read-only solely
-to bootstrap authenticated HTTPS package installation; package signatures remain
-checked. The build tools and libraries come from the frozen container/archive,
-not the host. Release timestamps and GitHub services also remain live inputs.
+and JavaScript action runtimes. Firmware jobs no longer mount host certificates;
+the toolchain publisher used a public CA bundle as a build-only secret for HTTPS
+bootstrap, with package signature checks enabled. Build tools and libraries come
+from the digest-pinned image, not the host. Release timestamps and GitHub services
+also remain live inputs.
 Historical packages/actions intentionally do not receive automatic security fixes;
 use this workflow only for trusted snapshot sources.

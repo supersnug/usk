@@ -9,43 +9,13 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    # Ubuntu image available at the 2.80 release date; see SNAPSHOT.md.
+    # Preinstalled frozen toolchain; recipe and provenance are in SNAPSHOT.md.
     container:
-      image: ubuntu:jammy-20240808@sha256:075680e983398fda61b1ac59ad733ad81d18df4bc46411666bb8a03fb9ea0195
-      # Bootstrap HTTPS before the container has its own ca-certificates package.
-      options: --volume /etc/ssl/certs:/host-certs:ro
+      image: ghcr.io/supersnug/usk-toolchain@sha256:6e35fef083820259315d949658917d5e4636c4760d878b5f724bebfbfcd141c9
     defaults:
       run:
         shell: bash
-    env:
-      DEBIAN_FRONTEND: noninteractive
     steps:
-      - name: Install dependencies
-        run: |
-          # Freeze all packages, including transitive dependencies, to the release date.
-          printf '%s\n' \
-            'deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/20240904T041204Z jammy main universe' \
-            'deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/20240904T041204Z jammy-updates main universe' \
-            'deb [check-valid-until=no] https://snapshot.ubuntu.com/ubuntu/20240904T041204Z jammy-security main universe' \
-            > /etc/apt/sources.list
-          apt-get -o Acquire::https::CaInfo=/host-certs/ca-certificates.crt update
-          apt-get -o Acquire::https::CaInfo=/host-certs/ca-certificates.crt install -y \
-            gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential \
-            ca-certificates curl git python3
-
-      - name: Install pinned CMake
-        run: |
-          curl --fail --location --retry 3 \
-            https://github.com/Kitware/CMake/releases/download/v3.30.2/cmake-3.30.2-linux-x86_64.tar.gz \
-            --output "$RUNNER_TEMP/cmake.tar.gz"
-          printf '%s  %s\n' \
-            cdd7fb352605cee3ae53b0e18b5929b642900e33d6b0173e19f6d4f2067ebf16 \
-            "$RUNNER_TEMP/cmake.tar.gz" | sha256sum --check
-          mkdir -p "$RUNNER_TEMP/cmake"
-          tar -xzf "$RUNNER_TEMP/cmake.tar.gz" -C "$RUNNER_TEMP/cmake" --strip-components=1
-          echo "$RUNNER_TEMP/cmake/bin" >> "$GITHUB_PATH"
-          "$RUNNER_TEMP/cmake/bin/cmake" --version
-
       - name: Checkout supersnug/usk
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
