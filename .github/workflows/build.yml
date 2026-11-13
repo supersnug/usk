@@ -34,6 +34,14 @@ jobs:
           path: pico-sdk
           submodules: recursive
 
+      - name: Checkout raspberrypi/picotool
+        uses: actions/checkout@v3
+        with:
+          repository: raspberrypi/picotool
+          # Picotool develop immediately before rehius/usk 2.80 was published.
+          ref: 971ee85176dd17a3bf43713cc96cd52e24b449f6
+          path: picotool
+
       - name: Set PICO_SDK_PATH environment variable
         run: |
           echo "PICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk" >> $GITHUB_ENV
@@ -51,7 +59,7 @@ jobs:
           sed -i 's/RAM(rwx) : ORIGIN =  0x20000000, LENGTH = 256k/RAM(rwx) : ORIGIN = 0x20038000, LENGTH = 32k/g' $GITHUB_WORKSPACE/pico-sdk/src/rp2_common/pico_crt0/rp2040/memmap_default.ld
           mkdir -p $GITHUB_WORKSPACE/build/busk
           cd $GITHUB_WORKSPACE/build/busk
-          cmake $GITHUB_WORKSPACE/busk
+          cmake "$GITHUB_WORKSPACE/busk" -DFETCHCONTENT_SOURCE_DIR_PICOTOOL="$GITHUB_WORKSPACE/picotool" -DPICOTOOL_FORCE_FETCH_FROM_GIT=ON
           make
           make clean
           cd $GITHUB_WORKSPACE
@@ -63,7 +71,7 @@ jobs:
         run: |
           mkdir -p $GITHUB_WORKSPACE/build/usk
           cd $GITHUB_WORKSPACE/build/usk
-          cmake $GITHUB_WORKSPACE/usk
+          cmake "$GITHUB_WORKSPACE/usk" -DFETCHCONTENT_SOURCE_DIR_PICOTOOL="$GITHUB_WORKSPACE/picotool" -DPICOTOOL_FORCE_FETCH_FROM_GIT=ON
           make
           make clean
           python3 $GITHUB_WORKSPACE/usk/prepare.py
