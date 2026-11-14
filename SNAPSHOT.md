@@ -43,9 +43,12 @@ Historical evidence:
 A full local build using the pinned Ubuntu image filesystem, package snapshot,
 CMake and source revisions produced these SHA-256 hashes. Both files were
 compared directly with the upstream 2.80 release downloads and were identical.
-GitHub Actions orchestration and release publishing were not exercised locally.
-This verification predates packaging the toolchain image; a firmware build using
-the published image has not yet been verified.
+
+The completed [GitHub Actions run #6](https://github.com/supersnug/usk/actions/runs/43359180668)
+also built and published firmware using the digest-pinned toolchain image.
+Both files from [its release](https://github.com/supersnug/usk/releases/tag/PicoFly_2.80_2026.11.13_03-31)
+were downloaded and compared byte-for-byte with rehius/usk's original 2.80
+release assets. Both were identical and have the hashes below.
 
 | Output | SHA-256 |
 | --- | --- |
